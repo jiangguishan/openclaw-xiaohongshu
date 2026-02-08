@@ -1,0 +1,32 @@
+{
+  "id": "xiaohongshu-mcp",
+  "name": "小红书MCP插件",
+  "description": "通过标准MCP协议对接小红书，支持发布图文/视频、搜索、评论、点赞、收藏等13个功能",
+  "version": "2.0.0",
+  "skills": ["skills/xiaohongshu"],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "mcpUrl": {
+        "type": "string",
+        "description": "小红书MCP服务地址",
+        "default": "http://localhost:18060/mcp"
+      },
+      "chromeBin": {
+        "type": "string",
+        "description": "Chrome浏览器可执行文件路径（用于MCP服务启动）"
+      },
+      "headless": {
+        "type": "boolean",
+        "description": "是否使用无头模式",
+        "default": true
+      },
+      "port": {
+        "type": "integer",
+        "description": "MCP服务监听端口",
+        "default": 18060
+      }
+    }
+  }
+}
