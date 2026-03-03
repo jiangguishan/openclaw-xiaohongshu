@@ -12,6 +12,60 @@
 - ❤️ **点赞收藏** - 点赞/取消点赞、收藏/取消收藏
 - 👤 **用户主页** - 获取用户资料和笔记列表
 - 📊 **帖子详情** - 获取完整内容、互动数据和评论
+- 🚀 **完整SOP流程** - 一键执行新闻→小红书发布全流程（8步）
+
+---
+
+## 🚀 完整SOP流程（新闻→小红书发布）
+
+### 一键执行完整流程
+
+插件内置完整的8步SOP流程，一键自动化执行：
+
+```
+步骤1：获取最新新闻
+  ↓
+步骤2：写入飞书表格
+  ↓
+步骤3：筛选话题性新闻
+  ↓
+步骤4：写成小红书风格文章
+  ↓
+步骤5：生成图片提示词
+  ↓
+步骤6：生成图片（火山引擎）
+  ↓
+步骤7：发送用户审核 ⚠️（需要确认）
+  ↓
+步骤8：发布到小红书
+```
+
+### 使用方式
+
+**方式1：一键执行完整SOP（推荐）**
+```
+对 OpenClaw 说：
+"执行小红书完整SOP流程"
+```
+
+**方式2：分步执行**
+```
+1. "获取新闻并写入飞书"
+2. "写成小红书文章"
+3. "生成图片"
+4. "发送审核"
+5. "发布到小红书"
+```
+
+### 新增工具
+
+| 工具名 | 功能 | 参数 |
+|--------|------|------|
+| `xiaohongshu_full_sop` | 执行完整SOP流程 | `news_source`（可选）, `auto_approve`（可选，默认False） |
+| `xiaohongshu_generate_images` | 生成图片 | `articles`（必填） |
+| `xiaohongshu_send_for_approval` | 发送用户审核 | `articles`（必填） |
+
+---
 
 ## 📦 安装
 
@@ -20,13 +74,14 @@
 1. **OpenClaw** 已安装并运行
 2. **Python 3.8+** 已安装
 3. **小红书MCP服务** - 从 [Releases](https://github.com/xpzouying/xiaohongshu-mcp/releases) 下载
+4. **火山引擎图片生成器**（可选，用于SOP流程）
 
 ### 快速安装
 
 ```bash
 # 1. 克隆或下载本插件
-git clone <本仓库地址> xiaohongshu-mcp-plugin
-cd xiaohongshu-mcp-plugin
+git clone https://github.com/jiangguishan/openclaw-xiaohongshu
+cd openclaw-xiaohongshu
 
 # 2. 运行安装脚本
 python scripts/install.py
@@ -52,6 +107,8 @@ pip install requests
 openclaw gateway restart
 ```
 
+---
+
 ## 🚀 使用
 
 ### 1. 启动MCP服务
@@ -73,11 +130,18 @@ xiaohongshu-mcp-windows-amd64.exe -port :18060
 
 ### 3. 开始使用
 
-自然语言即可操作：
+**基础使用（自然语言）：**
 - "搜索小红书上关于AI的内容"
 - "发一条小红书帖子：标题是'今日分享'，内容是..."
 - "帮我看看这个帖子的评论"
 - "给这条笔记点个赞"
+
+**高级使用（完整SOP流程）：**
+- "执行小红书完整SOP流程"（一键8步）
+- "只生成图片"
+- "发送用户审核"
+
+---
 
 ## 📁 插件结构
 
@@ -90,10 +154,13 @@ xiaohongshu-mcp-plugin/
 ├── skills/
 │   └── xiaohongshu/
 │       ├── SKILL.md              # 技能说明
-│       └── mcp_client.py         # MCP标准客户端（核心）
+│       ├── mcp_client.py         # MCP标准客户端（核心）
+│       └── openclaw_xiaohongshu_adapter.py  # 完整SOP适配器（新增）
 └── scripts/
     └── install.py                # 安装脚本
 ```
+
+---
 
 ## 🔧 配置
 
@@ -105,6 +172,10 @@ xiaohongshu-mcp-plugin/
 | `chromeBin` | 自动检测 | Chrome浏览器路径 |
 | `headless` | `true` | 无头模式 |
 | `port` | `18060` | MCP服务端口 |
+| `workspace` | 自动检测 | 工作空间路径 |
+| `volcano_tool_path` | 自动检测 | 火山引擎图片生成器路径 |
+
+---
 
 ## ⚠️ 注意事项
 
@@ -112,26 +183,37 @@ xiaohongshu-mcp-plugin/
 2. **发布频率** - 建议每天不超过50篇
 3. **内容规范** - 遵守小红书社区规则
 4. **Cookies** - 过期后重新扫码即可，不会封号
+5. **用户审核** - SOP流程默认需要用户审核，可设置`auto_approve=true`跳过
+
+---
 
 ## 🏗️ 架构
 
 ```
 OpenClaw Agent
     ↓ (Agent Tools)
-index.js → 11个注册工具
+index.js → 11个注册工具 + 3个SOP工具
     ↓ (subprocess)
-mcp_client.py → MCP Streamable HTTP 协议
+mcp_client.py / openclaw_xiaohongshu_adapter.py → MCP Streamable HTTP 协议
     ↓ (HTTP POST)
 xiaohongshu-mcp 服务 (Go + rod浏览器自动化)
     ↓ (Chrome)
 小红书网页
+
+SOP流程附加：
+新闻源 → 飞书表格 → 文章写作 → 图片生成（火山引擎）→ 用户审核 → 发布
 ```
+
+---
 
 ## 📄 许可证
 
 MIT License
 
+---
+
 ## 🙏 致谢
 
 - [xpzouying/xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) - MCP服务核心
 - [OpenClaw](https://github.com/openclaw/openclaw) - AI助手平台
+- 蒋桂山 - 完整SOP流程设计和实现

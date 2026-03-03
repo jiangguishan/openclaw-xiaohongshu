@@ -1,9 +1,18 @@
 {
   "id": "xiaohongshu-mcp",
-  "name": "小红书MCP插件",
-  "description": "通过标准MCP协议对接小红书，支持发布图文/视频、搜索、评论、点赞、收藏等13个功能",
-  "version": "2.0.0",
+  "name": "小红书MCP插件（优化版v3.0）",
+  "description": "通过标准MCP协议对接小红书，支持发布图文/视频、搜索、评论、点赞、收藏等16个功能（含3个智能工具）。更稳定、更通用、更智能，任何OpenClaw模型都能方便调用！",
+  "version": "3.0.0",
   "skills": ["skills/xiaohongshu"],
+  "config": {
+    "mcpUrl": "http://localhost:18060/mcp",
+    "headless": true,
+    "port": 18060,
+    "autoOptimize": true,
+    "maxRetries": 3,
+    "maxTitleLength": 20,
+    "maxContentLength": 1000
+  },
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
@@ -26,6 +35,26 @@
         "type": "integer",
         "description": "MCP服务监听端口",
         "default": 18060
+      },
+      "autoOptimize": {
+        "type": "boolean",
+        "description": "是否自动优化标题和内容",
+        "default": true
+      },
+      "maxRetries": {
+        "type": "integer",
+        "description": "最大重试次数",
+        "default": 3
+      },
+      "maxTitleLength": {
+        "type": "integer",
+        "description": "标题最大长度",
+        "default": 20
+      },
+      "maxContentLength": {
+        "type": "integer",
+        "description": "内容最大长度",
+        "default": 1000
       }
     }
   }

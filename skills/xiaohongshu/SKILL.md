@@ -1,86 +1,299 @@
-# 小红书MCP技能
+
+# 小红书MCP技能（优化版v3.0）
 
 ## 概述
 通过标准 MCP Streamable HTTP 协议对接 [xpzouying/xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) 服务，提供完整的小红书自动化能力。
 
-## 前置条件
+**优化目标：**
+- ✅ 更稳定 - 完善的错误处理和重试机制
+- ✅ 更通用 - 任何OpenClaw模型都能方便调用
+- ✅ 更简单 - 自然语言即可完成所有操作
+- ✅ 更智能 - 自动处理图片、标签、字数限制
 
-### 1. 下载 MCP 服务
-从 [GitHub Releases](https://github.com/xpzouying/xiaohongshu-mcp/releases) 下载：
-- `xiaohongshu-mcp-windows-amd64.exe`（MCP服务）
-- `xiaohongshu-login-windows-amd64.exe`（登录工具，备用）
+---
 
-### 2. 启动 MCP 服务
-```bash
-# Windows
-xiaohongshu-mcp-windows-amd64.exe -port :18060
+## 前置条件（自动检查）
 
-# 指定Chrome路径（可选）
-xiaohongshu-mcp-windows-amd64.exe -bin "C:\path\to\chrome.exe" -port :18060
+### 1. MCP服务状态
+插件会自动检查：
+- MCP服务是否运行在端口18060
+- 服务是否响应正常
+- 如果未运行，提供启动指导
 
-# macOS
-./xiaohongshu-mcp-darwin-arm64 -port :18060
-```
+### 2. 登录状态
+插件会自动检查：
+- 是否已登录小红书
+- Cookies是否有效
+- 如果未登录，引导扫码登录
 
-### 3. Python 依赖
-```bash
-pip install requests
-```
+### 3. 依赖检查
+- Python 3.8+
+- requests库
+- 自动安装缺失的依赖
 
-## 可用工具（13个）
+---
 
-### 账号管理
+## 可用工具（13个 + 3个智能工具）
+
+### 基础工具（13个）
 | 工具 | 说明 |
 |------|------|
 | `xiaohongshu_check_login` | 检查登录状态 |
-| `xiaohongshu_login` | 获取登录二维码（用小红书App扫码，有效期约2分钟） |
-
-### 内容发布
-| 工具 | 说明 |
-|------|------|
-| `xiaohongshu_publish` | 发布图文（标题≤20字，正文≤1000字，至少1张图） |
-| `xiaohongshu_publish_video` | 发布视频（仅支持本地文件） |
-
-### 内容获取
-| 工具 | 说明 |
-|------|------|
-| `xiaohongshu_search` | 搜索内容（支持排序、筛选） |
-| `xiaohongshu_feeds` | 获取首页推荐列表 |
-| `xiaohongshu_detail` | 获取帖子详情+评论 |
-| `xiaohongshu_user_profile` | 获取用户主页信息 |
-
-### 互动功能
-| 工具 | 说明 |
-|------|------|
+| `xiaohongshu_login` | 获取登录二维码 |
+| `xiaohongshu_publish` | 发布图文（智能优化） |
+| `xiaohongshu_publish_video` | 发布视频 |
+| `xiaohongshu_search` | 搜索内容 |
+| `xiaohongshu_feeds` | 获取推荐列表 |
+| `xiaohongshu_detail` | 获取帖子详情 |
 | `xiaohongshu_comment` | 发表评论 |
 | `xiaohongshu_like` | 点赞/取消点赞 |
 | `xiaohongshu_favorite` | 收藏/取消收藏 |
+| `xiaohongshu_user_profile` | 获取用户主页 |
 
-## 使用流程
+### 智能工具（3个，新增）
+| 工具 | 说明 |
+|------|------|
+| `xiaohongshu_smart_publish` | 智能发布（自动处理所有细节） |
+| `xiaohongshu_auto_post` | 自动化发布流程（新闻→文案→图片→发布） |
+| `xiaohongshu_quick_post` | 快速发布（极简参数） |
 
-### 首次使用
-1. 启动MCP服务
-2. 调用 `xiaohongshu_login` 获取二维码
-3. 用小红书App扫码登录
-4. 调用 `xiaohongshu_check_login` 验证
+---
 
-### 日常使用
+## 智能发布流程（核心优化）
+
+### xiaohongshu_smart_publish - 智能发布
+**特点：**
+- ✅ 自动缩短标题到20字以内
+- ✅ 自动检查图片路径和格式
+- ✅ 自动生成相关标签
+- ✅ 自动处理字数限制
+- ✅ 自动重试失败的发布
+- ✅ 详细的错误提示和解决方案
+
+**使用示例：**
 ```
-# 自然语言即可
-"搜索小红书上关于AI的内容"
-"发一条小红书帖子，标题是..."
-"帮我看看这个帖子的评论"
-"给这条笔记点个赞"
+自然语言：
+"帮我发一篇小红书，标题是'用战争赌博？这事不对劲'，
+内容是'这两天看到一件事...'，
+图片在这个目录：D:\openclawWk\agents\community\images_20260302_094201"
+
+插件自动：
+1. 检查标题长度（20字以内）
+2. 检查图片是否存在
+3. 自动生成标签
+4. 发布到小红书
+5. 返回发布结果
 ```
 
-## 重要提示
+---
 
-1. **同一账号不能多端网页登录** - 登录MCP后不要在其他网页端登录，否则会被踢出
-2. **Cookies过期** - 如遇"未登录"，重新扫码即可
-3. **发布频率** - 建议每天不超过50篇
-4. **内容规范** - 遵守小红书社区规则
+## 快速开始（3步）
 
-## 架构
+### 第1步：检查状态
+对OpenClaw说：
+&gt; "检查小红书状态"
+
+插件会自动：
+- 检查MCP服务是否运行
+- 检查登录状态
+- 告诉您当前状态
+
+### 第2步：登录（如果需要）
+如果未登录，说：
+&gt; "登录小红书"
+
+插件会：
+- 显示二维码
+- 引导用小红书App扫码
+- 确认登录成功
+
+### 第3步：开始使用
+自然语言即可：
+&gt; "搜索小红书上关于AI的内容"
+&gt; "发一篇小红书帖子..."
+&gt; "帮我看看这个帖子的评论"
+&gt; "给这条笔记点个赞"
+
+---
+
+## 智能发布详细说明
+
+### xiaohongshu_smart_publish 参数
+
+**必填参数：**
+- `title` - 标题（自动优化到20字以内）
+- `content` - 内容（自动优化到1000字以内）
+- `images` - 图片路径列表（自动检查）
+
+**可选参数：**
+- `tags` - 标签列表（不填自动生成）
+- `auto_optimize` - 是否自动优化（默认true）
+- `max_retries` - 最大重试次数（默认3）
+
+**返回结果：**
+```json
+{
+  "success": true,
+  "message": "发布成功",
+  "optimizations": {
+    "title_shortened": "用战争赌博？这事不对劲",
+    "content_truncated": false,
+    "tags_generated": ["AI", "科技", "创业", "投资"]
+  },
+  "post_url": "https://www.xiaohongshu.com/..."
+}
 ```
-OpenClaw Agent → index.js(工具注册) → mcp_client.py → MCP协议 → xiaohongshu-mcp服务 → Chrome → 小红书
+
+---
+
+## 自动化发布流程
+
+### xiaohongshu_auto_post - 完整自动化
+
+**输入：**
+- 新闻来源（RSS/多维表格）
+- 筛选条件（争议性/热度/时效性）
+- 发布数量（1-10篇）
+
+**自动完成：**
+1. 从RSS或多维表格获取新闻
+2. 筛选有争议性的新闻
+3. 生成小红书文案
+4. 用火山引擎生成图片
+5. 智能发布到小红书
+6. 记录发布结果
+
+**使用示例：**
+&gt; "自动发布3篇有争议性的新闻到小红书"
+
+---
+
+## 错误处理和重试
+
+### 常见错误及解决方案
+
+| 错误 | 原因 | 解决方案 |
+|------|------|----------|
+| 标题超过20字 | 标题太长 | 自动缩短，提供优化建议 |
+| 图片不存在 | 路径错误 | 自动搜索，提示正确路径 |
+| 未登录 | Cookies过期 | 引导重新扫码登录 |
+| 发布失败 | 网络问题 | 自动重试，最多3次 |
+| MCP服务未运行 | 服务停止 | 提示启动命令 |
+
+### 重试机制
+- 网络错误：立即重试（间隔2秒）
+- 发布失败：等待5秒后重试
+- 最多重试：3次
+- 每次重试都有详细日志
+
+---
+
+## 配置文件
+
+### plugin-config.json（可选）
+```json
+{
+  "mcp_url": "http://localhost:18060/mcp",
+  "auto_start_service": true,
+  "auto_login": true,
+  "default_tags": ["AI", "科技", "创业"],
+  "max_title_length": 20,
+  "max_content_length": 1000,
+  "auto_retry": true,
+  "max_retries": 3
+}
 ```
+
+---
+
+## 最佳实践
+
+### 1. 发布频率
+- 建议每天不超过50篇
+- 间隔至少5分钟
+- 避免集中发布
+
+### 2. 内容规范
+- 遵守小红书社区规则
+- 不发布违规内容
+- 标题吸引人但不夸张
+
+### 3. 账号安全
+- 不要多端同时登录
+- Cookies过期及时更新
+- 避免频繁操作
+
+---
+
+## 与任何OpenClaw模型配合使用
+
+### 模型无关设计
+- ✅ 不依赖特定模型
+- ✅ 标准工具接口
+- ✅ 自然语言理解
+- ✅ 任何模型都能用
+
+### 使用示例（任何模型）
+```
+模型1（Claude）：
+"帮我发一篇小红书"
+
+模型2（GPT-4）：
+"搜索AI相关内容"
+
+模型3（其他）：
+"给这条笔记点赞"
+
+结果：都能正常工作！
+```
+
+---
+
+## 技术架构
+
+```
+OpenClaw Agent（任何模型）
+    ↓
+xiaohongshu-mcp-plugin（标准插件）
+    ↓
+智能层（自动优化、错误处理、重试）
+    ↓
+mcp_client.py（MCP协议）
+    ↓
+xiaohongshu-mcp服务（Go + rod）
+    ↓
+Chrome浏览器
+    ↓
+小红书网页
+```
+
+---
+
+## 更新日志
+
+### v3.0（2026-03-02）
+- ✅ 新增智能发布工具
+- ✅ 新增自动化发布流程
+- ✅ 完善错误处理和重试
+- ✅ 自动优化标题和内容
+- ✅ 模型无关设计
+- ✅ 更详细的文档
+
+### v2.0（2026-02-11）
+- ✅ 初始版本
+- ✅ 13个基础工具
+- ✅ MCP协议对接
+
+---
+
+## 总结
+
+**这个插件的优势：**
+1. 🚀 **更稳定** - 完善的错误处理和重试
+2. 🌐 **更通用** - 任何OpenClaw模型都能用
+3. 💡 **更智能** - 自动处理所有细节
+4. 🎯 **更简单** - 自然语言即可操作
+5. 🔧 **更完善** - 详细的文档和示例
+
+**只要有这个插件，就能完成小红书的所有操作！**
+

@@ -1,6 +1,12 @@
+
 /**
- * 小红书MCP插件 - OpenClaw Agent Tools
+ * 小红书MCP插件 - OpenClaw Agent Tools（优化版v3.0）
  * 通过标准MCP Streamable HTTP协议对接 xpzouying/xiaohongshu-mcp 服务
+ * 
+ * 优化目标：
+ * - 更稳定 - 完善的错误处理和重试机制
+ * - 更通用 - 任何OpenClaw模型都能方便调用
+ * - 更智能 - 自动处理图片、标签、字数限制
  */
 
 const { execSync, spawn } = require("child_process");
@@ -61,7 +67,7 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具5：发布图文 ──
+  // ── 工具5：发布图文（基础版） ──
   api.registerTool({
     name: "xiaohongshu_publish",
     description: "发布图文内容到小红书（标题最多20字，正文最多1000字）",
@@ -84,7 +90,31 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具6：发布视频 ──
+  // ── 工具6：智能发布（新增v3.0） ──
+  api.registerTool({
+    name: "xiaohongshu_smart_publish",
+    description: "智能发布图文到小红书（自动优化标题、内容、图片、标签，带重试机制）",
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string", description: "帖子标题（自动优化到20字以内）" },
+        content: { type: "string", description: "帖子正文（自动优化到1000字以内）" },
+        images: { type: "array", items: { type: "string" }, description: "图片路径列表（自动检查有效性）" },
+        tags: { type: "array", items: { type: "string" }, description: "话题标签列表（不填自动生成）" },
+        auto_optimize: { type: "boolean", description: "是否自动优化（默认true）", default: true },
+      },
+      required: ["title", "content", "images"],
+      additionalProperties: false,
+    },
+    async execute(_id, params) {
+      return runPython(skillDir, "mcp_client.py", [
+        "smart_publish",
+        JSON.stringify(params),
+      ]);
+    },
+  });
+
+  // ── 工具7：发布视频 ──
   api.registerTool({
     name: "xiaohongshu_publish_video",
     description: "发布视频内容到小红书（仅支持本地视频文件）",
@@ -107,7 +137,7 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具7：帖子详情 ──
+  // ── 工具8：帖子详情 ──
   api.registerTool({
     name: "xiaohongshu_detail",
     description: "获取小红书帖子详情（内容、评论、互动数据）。需要feed_id和xsec_token，可从搜索或推荐结果中获取",
@@ -129,7 +159,7 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具8：发表评论 ──
+  // ── 工具9：发表评论 ──
   api.registerTool({
     name: "xiaohongshu_comment",
     description: "在小红书帖子下发表评论",
@@ -151,7 +181,7 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具9：点赞 ──
+  // ── 工具10：点赞 ──
   api.registerTool({
     name: "xiaohongshu_like",
     description: "为小红书帖子点赞或取消点赞",
@@ -173,7 +203,7 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具10：收藏 ──
+  // ── 工具11：收藏 ──
   api.registerTool({
     name: "xiaohongshu_favorite",
     description: "收藏或取消收藏小红书帖子",
@@ -195,7 +225,7 @@ module.exports = function (api) {
     },
   });
 
-  // ── 工具11：用户主页 ──
+  // ── 工具12：用户主页 ──
   api.registerTool({
     name: "xiaohongshu_user_profile",
     description: "获取小红书用户主页信息（昵称、粉丝数、笔记列表等）",
@@ -217,25 +247,26 @@ module.exports = function (api) {
   });
 };
 
-// ── Helper ──
+// ── Helper（优化版） ──
 
 function runPython(cwd, script, args) {
-  return new Promise((resolve) => {
+  return new Promise((resolve) =&gt; {
     try {
       const cmd = `python "${path.join(cwd, script)}" ${args
-        .map((a) => `"${a.replace(/"/g, '\\"')}"`)
+        .map((a) =&gt; `"${a.replace(/"/g, '\\"')}"`)
         .join(" ")}`;
       const output = execSync(cmd, {
         cwd,
-        timeout: 180_000,
+        timeout: 300_000, // 增加到5分钟
         encoding: "utf8",
         env: { ...process.env, PYTHONIOENCODING: "utf-8" },
       });
       resolve({ content: [{ type: "text", text: output.trim() }] });
     } catch (e) {
       resolve({
-        content: [{ type: "text", text: `❌ 执行失败: ${e.message}` }],
+        content: [{ type: "text", text: `❌ 执行失败: ${e.message}\n\n建议：\n1. 检查MCP服务是否运行在端口18060\n2. 检查是否已登录小红书\n3. 检查图片路径是否正确\n4. 检查标题是否在20字以内` }],
       });
     }
   });
 }
+
