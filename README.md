@@ -215,5 +215,4 @@ MIT License
 ## 🙏 致谢
 
 - [xpzouying/xiaohongshu-mcp](https://github.com/xpzouying/xiaohongshu-mcp) - MCP服务核心
-- [OpenClaw](https://github.com/openclaw/openclaw) - AI助手平台
-- 蒋桂山 - 完整SOP流程设计和实现
+- [OpenClaw](https://github.com/openclaw/openclaw) - AI助手
